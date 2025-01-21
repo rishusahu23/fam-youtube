@@ -3,8 +3,8 @@ package strategy
 import (
 	"context"
 	"github.com/google/wire"
-	"github.com/rishu/microservice/user/dao"
-	"github.com/rishu/microservice/user/dao/mongo"
+	"github.com/rishusahu23/fam-youtube/user/dao"
+	"github.com/rishusahu23/fam-youtube/user/dao/mongo"
 )
 
 type DB struct {

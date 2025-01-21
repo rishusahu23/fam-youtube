@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package vendor.youtube;
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/vendor/youtube";
+
+message FetchYoutubeDataListRequest {
+
+}
+
+message  FetchYoutubeDataListResponse {
+  repeated Item items = 1 [json_name = "items"];
+}
+
+message Item {
+  RawId raw_id = 1 [json_name = "id"];
+  Snippet snippet = 2 [json_name = "snippet"];
+}
+
+message Snippet {
+  string published_at = 1 [json_name = "publishedAt"];
+  string title = 2 [json_name = "title"];
+  string description = 3 [json_name = "description"];
+  map<string,Thumbnail> thumbnails = 4 [json_name = "thumbnails"];
+}
+
+message Thumbnail {
+  string url = 1 [json_name = "url"];
+  int32 width = 2 [json_name = "width"];
+  int32 height = 3 [json_name = "height"];
+}
+
+message RawId {
+  string video_id = 1 [json_name = "videoId"];
+}

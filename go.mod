@@ -8,7 +8,6 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0
-	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
 	github.com/jonboulle/clockwork v0.4.0
 	github.com/knadh/koanf v1.5.0

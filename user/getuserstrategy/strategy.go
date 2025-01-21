@@ -2,7 +2,7 @@ package strategy
 
 import (
 	"context"
-	"github.com/rishu/microservice/gen/api/user"
+	"github.com/rishusahu23/fam-youtube/gen/api/user"
 )
 
 type GetUserStrategy interface {

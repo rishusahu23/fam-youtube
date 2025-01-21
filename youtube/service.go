@@ -16,7 +16,7 @@ func NewService() *Service {
 
 var _ youtubePb.YoutubeServiceServer = (*Service)(nil)
 
-func (s Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
+func (s *Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
 	return &youtubePb.TriggerJobResponse{
 		Status: rpc.StatusOk(),
 	}, nil

@@ -1,9 +1,9 @@
 package mongo
 
 import (
-	"github.com/rishu/microservice/gen/api/user"
-	"github.com/rishu/microservice/gen/api/user/enums"
-	pkgEnums "github.com/rishu/microservice/pkg/enums"
+	"github.com/rishusahu23/fam-youtube/gen/api/user"
+	"github.com/rishusahu23/fam-youtube/gen/api/user/enums"
+	pkgEnums "github.com/rishusahu23/fam-youtube/pkg/enums"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"

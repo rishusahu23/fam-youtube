@@ -1,21 +1,101 @@
 package main
 
 import (
-  "fmt"
+	"context"
+	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rishusahu23/fam-youtube/config"
+	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
+	"github.com/rishusahu23/fam-youtube/youtube/wire"
+	"github.com/soheilhy/cmux"
+	"google.golang.org/grpc"
+	"log"
+	"net"
+	"net/http"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
+// Combined gRPC and HTTP server using cmux
+func startCombinedServer(ctx context.Context, conf *config.Config) {
+	// Create a listener for the shared port
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", conf.Server.GrpcPort))
+	if err != nil {
+		log.Fatalf("failed to listen on port %v: %v", conf.Server.GrpcPort, err)
+	}
+
+	// Create a cmux instance
+	m := cmux.New(lis)
+
+	// Match connections for gRPC
+	grpcL := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+
+	// Match connections for HTTP (gRPC-Gateway and custom HTTP)
+	httpL := m.Match(cmux.Any())
+
+	// Start gRPC server
+	go func() {
+		startGrpcServer(ctx, grpcL, conf)
+	}()
+
+	// Start HTTP server
+	go func() {
+		startGrpcHttpServer(ctx, httpL, conf)
+	}()
+
+	// Start cmux serving
+	log.Printf("Starting combined gRPC and HTTP server on :%v", conf.Server.GrpcPort)
+	if err := m.Serve(); err != nil {
+		log.Fatalf("cmux server error: %v", err)
+	}
+}
+
+// gRPC server setup
+func startGrpcServer(ctx context.Context, lis net.Listener, conf *config.Config) {
+	opts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(1024 * 1024 * 100), // Max receive message size (100 MB)
+		grpc.MaxSendMsgSize(1024 * 1024 * 100), // Max send message size (100 MB)
+	}
+
+	s := grpc.NewServer(opts...)
+	//mongoClient := mongo.GetMongoClient(ctx, conf)
+	//redisClient := redis2.GetRedisClient(conf)
+	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService())
+
+	log.Printf("gRPC server running")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve gRPC server: %v", err)
+	}
+}
+
+// gRPC-Gateway server setup
+func startGrpcHttpServer(ctx context.Context, lis net.Listener, conf *config.Config) {
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+
+	err := youtubePb.RegisterYoutubeServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf(":%v", conf.Server.GrpcPort), opts)
+	if err != nil {
+		log.Fatalf("failed to register service handler: %v", err)
+	}
+
+	httpServer := &http.Server{
+		Handler: mux, // Use the mux directly
+	}
+
+	log.Printf("HTTP server running")
+	if err := httpServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve HTTP server: %v", err)
+	}
+}
 
 func main() {
-  //TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-  // to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-  s := "gopher"
-  fmt.Println("Hello and welcome, %s!", s)
+	ctx := context.Background()
+	conf, err := config.Load()
+	if err != nil {
+		panic(err)
+	}
 
-  for i := 1; i <= 5; i++ {
-	//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-	// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-	fmt.Println("i =", 100/i)
-  }
+	// Start combined gRPC and HTTP server
+	startCombinedServer(ctx, conf)
+
+	// Block main goroutine indefinitely (this will keep the servers running)
+	select {}
 }

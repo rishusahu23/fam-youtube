@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/wire"
-	userPb "github.com/rishu/microservice/gen/api/user"
-	store "github.com/rishu/microservice/pkg/in_memory_store"
+	userPb "github.com/rishusahu23/fam-youtube/gen/api/user"
+	store "github.com/rishusahu23/fam-youtube/pkg/in_memory_store"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

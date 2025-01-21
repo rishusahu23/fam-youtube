@@ -4,9 +4,8 @@ import (
 	"context"
 	"flag"
 	"github.com/golang/mock/gomock"
-	"github.com/rishu/microservice/config"
-	mocks2 "github.com/rishu/microservice/pkg/transaction/mocks"
-	mocks "github.com/rishu/microservice/user/mocks/dao"
+	"github.com/rishusahu23/fam-youtube/config"
+	mocks "github.com/rishusahu23/fam-youtube/user/mocks/dao"
 	"os"
 	"testing"
 )
