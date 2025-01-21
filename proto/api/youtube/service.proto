@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package youtube;
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/youtube";
+
+import "api/rpc/status.proto";
+
+import "google/api/annotations.proto";
+
+service YoutubeService {
+  rpc TriggerJob(TriggerJobRequest) returns (TriggerJobResponse) {
+    option(google.api.http) = {
+      post: "/api/v1/trigger-job"
+      body: "*"
+    };
+  };
+}
+
+message TriggerJobRequest {
+  int32 interval = 1;
+}
+
+message TriggerJobResponse {
+  enum Status {
+    OK = 0;
+    INVALID_ARGUMENT = 3;
+    NO_RECORD_FOUND = 5;
+    INTERNAL = 13;
+  }
+  rpc.Status status = 1;
+}
