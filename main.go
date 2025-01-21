@@ -58,7 +58,7 @@ func startGrpcServer(ctx context.Context, lis net.Listener, conf *config.Config)
 	s := grpc.NewServer(opts...)
 	//mongoClient := mongo.GetMongoClient(ctx, conf)
 	//redisClient := redis2.GetRedisClient(conf)
-	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService())
+	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService(conf))
 
 	log.Printf("gRPC server running")
 	if err := s.Serve(lis); err != nil {

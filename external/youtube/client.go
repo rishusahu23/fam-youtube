@@ -1,4 +1,4 @@
-package post
+package youtube
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"github.com/rishusahu23/fam-youtube/config"
 	"github.com/rishusahu23/fam-youtube/external/ohttp"
 	"github.com/rishusahu23/fam-youtube/external/pkg"
-	"github.com/rishusahu23/fam-youtube/external/post/json_placeholder"
+	"github.com/rishusahu23/fam-youtube/gen/api/external/youtube"
 )
 
 type Client interface {
-	FetchPost(ctx context.Context, req *placeholder.FetchPostRequest) (*placeholder.FetchPostResponse, error)
+	FetchYoutubeData(ctx context.Context, req *youtube.FetchYoutubeDataListRequest) (*youtube.FetchYoutubeDataListResponse, error)
 }
 
 type ClientImpl struct {
@@ -20,7 +20,7 @@ type ClientImpl struct {
 
 var _ Client = &ClientImpl{}
 
-func NewPostClientImpl(httpRequestHandler *ohttp.HttpRequestHandler, conf *config.Config) *ClientImpl {
+func NewYoutubeClientImpl(httpRequestHandler *ohttp.HttpRequestHandler, conf *config.Config) *ClientImpl {
 	return &ClientImpl{
 		httpRequestHandler: httpRequestHandler,
 		conf:               conf,
@@ -28,11 +28,11 @@ func NewPostClientImpl(httpRequestHandler *ohttp.HttpRequestHandler, conf *confi
 }
 
 func (c *ClientImpl) requestFactoryMap() pkg.SyncRequestFactory {
-	return c.NewPlaceholderRequest
+	return c.NewGoogleRequest
 
 }
 
-func (c *ClientImpl) FetchPost(ctx context.Context, req *placeholder.FetchPostRequest) (*placeholder.FetchPostResponse, error) {
+func (c *ClientImpl) FetchYoutubeData(ctx context.Context, req *youtube.FetchYoutubeDataListRequest) (*youtube.FetchYoutubeDataListResponse, error) {
 	venReq, err := pkg.NewVendorRequest(req, c.requestFactoryMap())
 	if err != nil {
 		return nil, err
@@ -43,5 +43,5 @@ func (c *ClientImpl) FetchPost(ctx context.Context, req *placeholder.FetchPostRe
 		return nil, err
 	}
 
-	return resp.(*placeholder.FetchPostResponse), nil
+	return resp.(*youtube.FetchYoutubeDataListResponse), nil
 }

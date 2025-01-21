@@ -8,14 +8,21 @@ package wire
 
 import (
 	"crypto/tls"
+	"github.com/rishusahu23/fam-youtube/config"
+	"github.com/rishusahu23/fam-youtube/external/ohttp"
+	youtube2 "github.com/rishusahu23/fam-youtube/external/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube"
 	"net/http"
 )
 
 // Injectors from wire.go:
 
-func InitialiseYoutubeService() *youtube.Service {
-	service := youtube.NewService()
+func InitialiseYoutubeService(conf *config.Config) *youtube.Service {
+	client := getHttpClient()
+	httpRequestHandler := ohttp.NewHttpRequestHandler(client)
+	clientImpl := youtube2.NewYoutubeClientImpl(httpRequestHandler, conf)
+	youtubeClient := youtubeProvider(clientImpl)
+	service := youtube.NewService(youtubeClient)
 	return service
 }
 
@@ -27,4 +34,12 @@ func getHttpClient() *http.Client {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
+}
+
+func youtubeProvider(impl *youtube2.ClientImpl) youtube2.Client {
+	return impl
+}
+
+func httpHandlerProvider(impl *ohttp.HttpRequestHandler) ohttp.IHttpRequestHandler {
+	return impl
 }
