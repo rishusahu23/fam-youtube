@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
@@ -37,3 +38,9 @@ func ConvertToModel(rec *record.Record) *Record {
 		PublishedAt: rec.GetPublishedAt().AsTime(),
 	}
 }
+
+type Records []*Record
+
+func (r Records) Slice(start, end int) pagination.Rows { return r[start:end] }
+func (r Records) GetTimestamp(index int) time.Time     { return r[index].PublishedAt }
+func (r Records) Size() int                            { return len(r) }

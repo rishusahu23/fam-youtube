@@ -8,6 +8,7 @@ import (
 	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/dao"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
@@ -77,4 +78,29 @@ func getRecord(items []*vgPb.Item) []*record.Record {
 		}
 	}
 	return records
+}
+
+func (s *Service) GetPaginatedRecords(ctx context.Context, req *youtubePb.GetPaginatedRecordsRequest) (*youtubePb.GetPaginatedRecordsResponse, error) {
+	var (
+		errRes = func(status *rpc.Status) (*youtubePb.GetPaginatedRecordsResponse, error) {
+			return &youtubePb.GetPaginatedRecordsResponse{
+				Status: status,
+			}, nil
+		}
+	)
+	pageToken, err := pagination.GetPageToken(req.GetPageContext())
+	if err != nil {
+		return errRes(rpc.StatusInternal(err.Error()))
+	}
+
+	records, pageContextResp, err := s.dao.GetPaginatedRecords(ctx, pageToken, req.GetPageContext().GetPageSize())
+	if err != nil {
+		return errRes(rpc.StatusInternal(err.Error()))
+	}
+
+	return &youtubePb.GetPaginatedRecordsResponse{
+		Status:      rpc.StatusOk(),
+		PageContext: pageContextResp,
+		Records:     records,
+	}, nil
 }

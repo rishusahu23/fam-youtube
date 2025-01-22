@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package rpc;
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/rpc";
+
+message PageContextResponse {
+  string before_token = 1;
+  bool has_before = 2;
+  string after_token = 3;
+  bool has_after = 4;
+}
+
+message PageContextRequest {
+  oneof token {
+    string before_token = 1;
+    string after_token = 2;
+  }
+  uint32 page_size = 3;
+}

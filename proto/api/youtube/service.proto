@@ -5,6 +5,8 @@ package youtube;
 option go_package = "github.com/rishusahu23/fam-youtube/gen/api/youtube";
 
 import "api/rpc/status.proto";
+import "api/rpc/page.proto";
+import "api/youtube/record/record.proto";
 
 import "google/api/annotations.proto";
 
@@ -15,7 +17,14 @@ service YoutubeService {
       body: "*"
     };
   };
-}
+
+  rpc GetPaginatedRecords(GetPaginatedRecordsRequest) returns(GetPaginatedRecordsResponse) {
+    option(google.api.http) = {
+      post: "/api/v1/get-paginated-records"
+      body: "*"
+    };
+  }
+ }
 
 message TriggerJobRequest {
   int32 interval = 1;
@@ -29,4 +38,20 @@ message TriggerJobResponse {
     INTERNAL = 13;
   }
   rpc.Status status = 1;
+}
+
+message GetPaginatedRecordsRequest {
+  rpc.PageContextRequest page_context = 1;
+}
+
+message GetPaginatedRecordsResponse {
+  enum Status {
+    OK = 0;
+    INVALID_ARGUMENT = 3;
+    NO_RECORD_FOUND = 5;
+    INTERNAL = 13;
+  }
+  rpc.Status status = 1;
+  rpc.PageContextResponse page_context = 2;
+  repeated record.Record records = 3;
 }

@@ -2,7 +2,9 @@ package dao
 
 import (
 	"context"
+	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 )
 
 type Dao interface {
@@ -10,4 +12,5 @@ type Dao interface {
 	GetByTitle(ctx context.Context, title string) ([]*record.Record, error)
 	GetByDescription(ctx context.Context, desc string) ([]*record.Record, error)
 	Create(ctx context.Context, rec *record.Record) error
+	GetPaginatedRecords(ctx context.Context, pageToken *pagination.PageToken, pageSize uint32) ([]*record.Record, *rpc.PageContextResponse, error)
 }
