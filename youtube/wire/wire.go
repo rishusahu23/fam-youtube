@@ -6,10 +6,12 @@ package wire
 import (
 	"crypto/tls"
 	"github.com/google/wire"
+	"gorm.io/gorm"
 	"github.com/rishusahu23/fam-youtube/config"
 	"github.com/rishusahu23/fam-youtube/external/ohttp"
 	youtube2 "github.com/rishusahu23/fam-youtube/external/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube"
+	"github.com/rishusahu23/fam-youtube/youtube/dao"
 	"net/http"
 )
 
@@ -29,13 +31,14 @@ func httpHandlerProvider(impl *ohttp.HttpRequestHandler) ohttp.IHttpRequestHandl
 	return impl
 }
 
-func InitialiseYoutubeService(conf *config.Config) *youtube.Service {
+func InitialiseYoutubeService(conf *config.Config, db *gorm.DB) *youtube.Service {
 	wire.Build(
 		youtube.NewService,
 		youtube2.NewYoutubeClientImpl,
 		youtubeProvider,
 		ohttp.NewHttpRequestHandler,
 		getHttpClient,
+		dao.RecordWireSet,
 	)
 	return &youtube.Service{}
 }

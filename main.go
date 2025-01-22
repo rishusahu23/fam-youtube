@@ -9,6 +9,8 @@ import (
 	"github.com/rishusahu23/fam-youtube/youtube/wire"
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"net"
 	"net/http"
@@ -58,7 +60,21 @@ func startGrpcServer(ctx context.Context, lis net.Listener, conf *config.Config)
 	s := grpc.NewServer(opts...)
 	//mongoClient := mongo.GetMongoClient(ctx, conf)
 	//redisClient := redis2.GetRedisClient(conf)
-	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService(conf))
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		conf.PostgresConfig.User,
+		conf.PostgresConfig.Password,
+		conf.PostgresConfig.Host,
+		conf.PostgresConfig.Port,
+		conf.PostgresConfig.DBName,
+		"disable",
+	)
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService(conf, db))
 
 	log.Printf("gRPC server running")
 	if err := s.Serve(lis); err != nil {

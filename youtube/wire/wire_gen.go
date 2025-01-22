@@ -12,17 +12,20 @@ import (
 	"github.com/rishusahu23/fam-youtube/external/ohttp"
 	youtube2 "github.com/rishusahu23/fam-youtube/external/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube"
+	"github.com/rishusahu23/fam-youtube/youtube/dao"
+	"gorm.io/gorm"
 	"net/http"
 )
 
 // Injectors from wire.go:
 
-func InitialiseYoutubeService(conf *config.Config) *youtube.Service {
+func InitialiseYoutubeService(conf *config.Config, db *gorm.DB) *youtube.Service {
 	client := getHttpClient()
 	httpRequestHandler := ohttp.NewHttpRequestHandler(client)
 	clientImpl := youtube2.NewYoutubeClientImpl(httpRequestHandler, conf)
 	youtubeClient := youtubeProvider(clientImpl)
-	service := youtube.NewService(youtubeClient)
+	recordDaoImpl := dao.NewRecordDaoImpl(db)
+	service := youtube.NewService(youtubeClient, recordDaoImpl)
 	return service
 }
 

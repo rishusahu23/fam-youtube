@@ -20,20 +20,21 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Command-line argument (up or down)
+	if len(os.Args) < 2 {
+		log.Fatalf("Usage: go run migrate.go <up|down>")
+	}
+
 	// Construct PostgreSQL connection string
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		conf.PostgresConfig.User,
 		conf.PostgresConfig.Password,
 		conf.PostgresConfig.Host,
 		conf.PostgresConfig.Port,
-		conf.PostgresConfig.DBName,
+		os.Args[2],
 		"disable",
 	)
 
-	// Command-line argument (up or down)
-	if len(os.Args) < 2 {
-		log.Fatalf("Usage: go run migrate.go <up|down>")
-	}
 	action := os.Args[1]
 
 	fmt.Println(os.Args)
@@ -47,11 +48,14 @@ func main() {
 
 	switch action {
 	case "up":
+		if err = createDatabaseIfNotExists(dbURL, os.Args[2]); err != nil {
+			panic(err)
+		}
 		err = m.Up()
 	case "down":
 		err = m.Steps(-1)
 	case "snapshot":
-		err = snapshotDB(dbURL, conf.PostgresConfig.DBName)
+		err = snapshotDB(dbURL, os.Args[2])
 	default:
 		log.Fatalf("Invalid action: %s. Use 'up' or 'down'.", action)
 	}
@@ -122,5 +126,31 @@ func snapshotDB(dbURL, dbName string) error {
 	}
 
 	log.Printf("Snapshot saved to %s\n", snapshotFile)
+	return nil
+}
+
+// createDatabaseIfNotExists checks if the database exists and creates it if it doesn't.
+func createDatabaseIfNotExists(dbUrl, dbName string) error {
+	db, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		return fmt.Errorf("failed to connect to default database: %v", err)
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf("SELECT 1 FROM pg_database WHERE datname = '%s'", dbName)
+	var exists int
+	err = db.QueryRow(query).Scan(&exists)
+	if err == sql.ErrNoRows {
+		// Database does not exist, create it
+		_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", dbName))
+		if err != nil {
+			return fmt.Errorf("failed to create database: %v", err)
+		}
+		log.Printf("Database '%s' created successfully.", dbName)
+	} else if err != nil {
+		return fmt.Errorf("error checking database existence: %v", err)
+	} else {
+		log.Printf("Database '%s' already exists.", dbName)
+	}
 	return nil
 }

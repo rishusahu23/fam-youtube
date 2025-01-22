@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package youtube.record;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/youtube/record";
+
+message Record {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp published_at = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  Metadata metadata = 7;
+}
+
+
+message Metadata {
+  map<string,Thumbnail> thumbnails = 4;
+}
+
+message Thumbnail {
+  string url = 1;
+  int32 width = 2;
+  int32 height = 3;
+}
