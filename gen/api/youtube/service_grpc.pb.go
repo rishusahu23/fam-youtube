@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	YoutubeService_TriggerJob_FullMethodName          = "/youtube.YoutubeService/TriggerJob"
 	YoutubeService_GetPaginatedRecords_FullMethodName = "/youtube.YoutubeService/GetPaginatedRecords"
+	YoutubeService_GetFilteredRecords_FullMethodName  = "/youtube.YoutubeService/GetFilteredRecords"
 )
 
 // YoutubeServiceClient is the client API for YoutubeService service.
@@ -29,6 +30,7 @@ const (
 type YoutubeServiceClient interface {
 	TriggerJob(ctx context.Context, in *TriggerJobRequest, opts ...grpc.CallOption) (*TriggerJobResponse, error)
 	GetPaginatedRecords(ctx context.Context, in *GetPaginatedRecordsRequest, opts ...grpc.CallOption) (*GetPaginatedRecordsResponse, error)
+	GetFilteredRecords(ctx context.Context, in *GetFilteredRecordsRequest, opts ...grpc.CallOption) (*GetFilteredRecordsResponse, error)
 }
 
 type youtubeServiceClient struct {
@@ -57,12 +59,22 @@ func (c *youtubeServiceClient) GetPaginatedRecords(ctx context.Context, in *GetP
 	return out, nil
 }
 
+func (c *youtubeServiceClient) GetFilteredRecords(ctx context.Context, in *GetFilteredRecordsRequest, opts ...grpc.CallOption) (*GetFilteredRecordsResponse, error) {
+	out := new(GetFilteredRecordsResponse)
+	err := c.cc.Invoke(ctx, YoutubeService_GetFilteredRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // YoutubeServiceServer is the server API for YoutubeService service.
 // All implementations must embed UnimplementedYoutubeServiceServer
 // for forward compatibility
 type YoutubeServiceServer interface {
 	TriggerJob(context.Context, *TriggerJobRequest) (*TriggerJobResponse, error)
 	GetPaginatedRecords(context.Context, *GetPaginatedRecordsRequest) (*GetPaginatedRecordsResponse, error)
+	GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error)
 	mustEmbedUnimplementedYoutubeServiceServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedYoutubeServiceServer) TriggerJob(context.Context, *TriggerJob
 }
 func (UnimplementedYoutubeServiceServer) GetPaginatedRecords(context.Context, *GetPaginatedRecordsRequest) (*GetPaginatedRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPaginatedRecords not implemented")
+}
+func (UnimplementedYoutubeServiceServer) GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFilteredRecords not implemented")
 }
 func (UnimplementedYoutubeServiceServer) mustEmbedUnimplementedYoutubeServiceServer() {}
 
@@ -125,6 +140,24 @@ func _YoutubeService_GetPaginatedRecords_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YoutubeService_GetFilteredRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFilteredRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeServiceServer).GetFilteredRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: YoutubeService_GetFilteredRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeServiceServer).GetFilteredRecords(ctx, req.(*GetFilteredRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // YoutubeService_ServiceDesc is the grpc.ServiceDesc for YoutubeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var YoutubeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPaginatedRecords",
 			Handler:    _YoutubeService_GetPaginatedRecords_Handler,
+		},
+		{
+			MethodName: "GetFilteredRecords",
+			Handler:    _YoutubeService_GetFilteredRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

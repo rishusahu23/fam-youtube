@@ -99,3 +99,24 @@ func (r *RecordDaoImpl) GetPaginatedRecords(ctx context.Context, pageToken *pagi
 	}
 	return recProtos, pageCtxResp, nil
 }
+
+func (r *RecordDaoImpl) GetByTitleAndDescription(ctx context.Context, title, desc string) ([]*record.Record, error) {
+	db := r.db
+	if title != "" {
+		db = db.Where("title = ?", title)
+	}
+	if desc != "" {
+		db = db.Where("description = ?", desc)
+	}
+
+	var recModels []*model.Record
+	res := db.Find(&recModels)
+	if res.Error != nil {
+		return nil, fmt.Errorf("error fetching records from db, err : %w", res.Error)
+	}
+	recProtos := make([]*record.Record, 0)
+	for _, recModel := range recModels {
+		recProtos = append(recProtos, recModel.ConvertToProto())
+	}
+	return recProtos, nil
+}

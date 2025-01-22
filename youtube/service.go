@@ -104,3 +104,14 @@ func (s *Service) GetPaginatedRecords(ctx context.Context, req *youtubePb.GetPag
 		Records:     records,
 	}, nil
 }
+
+func (s *Service) GetFilteredRecords(ctx context.Context, req *youtubePb.GetFilteredRecordsRequest) (*youtubePb.GetFilteredRecordsResponse, error) {
+	resp, err := s.dao.GetByTitleAndDescription(ctx, req.GetTitle(), req.GetDescription())
+	if err != nil {
+		return nil, err
+	}
+	return &youtubePb.GetFilteredRecordsResponse{
+		Status:  rpc.StatusOk(),
+		Records: resp,
+	}, nil
+}

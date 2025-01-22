@@ -23,8 +23,14 @@ service YoutubeService {
       post: "/api/v1/get-paginated-records"
       body: "*"
     };
+  };
+
+  rpc GetFilteredRecords(GetFilteredRecordsRequest) returns(GetFilteredRecordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/records"
+    };
   }
- }
+}
 
 message TriggerJobRequest {
   int32 interval = 1;
@@ -54,4 +60,20 @@ message GetPaginatedRecordsResponse {
   rpc.Status status = 1;
   rpc.PageContextResponse page_context = 2;
   repeated record.Record records = 3;
+}
+
+message GetFilteredRecordsRequest {
+  string title = 1;
+  string description = 2;
+}
+
+message GetFilteredRecordsResponse {
+  enum Status {
+    OK = 0;
+    INVALID_ARGUMENT = 3;
+    NO_RECORD_FOUND = 5;
+    INTERNAL = 13;
+  }
+  rpc.Status status = 1;
+  repeated record.Record records = 2;
 }
