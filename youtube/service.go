@@ -13,6 +13,8 @@ import (
 	custerr "github.com/rishusahu23/fam-youtube/pkg/errors"
 	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/dao"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
@@ -36,28 +38,34 @@ func NewService(conf *config.Config, googleClient youtube.Client, dao dao.Dao) *
 
 var _ youtubePb.YoutubeServiceServer = (*Service)(nil)
 
+// TriggerJob api will be used to fetch data from youtube google api.
+// Do not need to trigger this, it will be called automatically from server every 10 seconds.
 func (s *Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
 	for ind, _ := range s.conf.ApiKeys {
 		err := s.triggerJob(ctx, &vgPb.FetchYoutubeDataListRequest{
 			ApiKey: s.conf.ApiKeys[ind],
 		})
+		// If quota of allowed request finished, we try with new key until all keys got exhausted
 		if err != nil && errors.Is(err, custerr.ErrQuotaExceeded) {
+			// we update the index to get new keys
 			s.ind = (s.ind + 1) % len(s.conf.ApiKeys)
 			continue
 		}
+		// return internal if some other issue.
 		if err != nil {
 			return &youtubePb.TriggerJobResponse{
 				Status: rpc.StatusInternal(err.Error()),
-			}, err
+			}, status.Errorf(codes.Internal, err.Error())
 		}
 		return &youtubePb.TriggerJobResponse{
 			Status: rpc.StatusOk(),
 		}, nil
 	}
 
+	// return internal if all keys quota exhausted
 	return &youtubePb.TriggerJobResponse{
 		Status: rpc.StatusInternal(""),
-	}, nil
+	}, status.Errorf(codes.Internal, "all keys quota exhausted")
 
 }
 

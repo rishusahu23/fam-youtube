@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
-	"time"
 )
 
 var (
@@ -18,6 +17,7 @@ var (
 	_, b, _, _ = runtime.Caller(0)
 )
 
+// using koanf to load config
 func Load() (*Config, error) {
 	once.Do(func() {
 		config, err = loadConfig()
@@ -34,7 +34,6 @@ func TestConfigDir() string {
 }
 
 func loadConfig() (*Config, error) {
-
 	conf := &Config{}
 	testConfigDir := TestConfigDir()
 	// loads config from file
@@ -51,38 +50,15 @@ func loadConfig() (*Config, error) {
 }
 
 type Config struct {
-	MongoConfig     *MongoConfig
-	Server          *Server
-	ExternalService *ExternalService
-	PostgresConfig  *PostgresConfig
-	RedisConfig     *RedisConfig
-	ApiKeys         []string
+	Server         *Server
+	PostgresConfig *PostgresConfig
+	ApiKeys        []string
 }
 
 type Server struct {
 	Port         int
 	GrpcPort     int
 	GrpcHttpPort int
-}
-
-type MongoConfig struct {
-	MongoConnectTimeoutMS time.Duration
-	MongoDBName           string
-	MongoDBURI            string
-	MongoHost             string
-	MongoMaxIdleTimeMS    time.Duration
-	MongoMaxPoolSize      int
-	MongoMinPoolSize      int
-	MongoPassword         string
-	MongoPort             int
-}
-
-type ExternalService struct {
-	JsonPlaceholder *JsonPlaceholder
-}
-
-type JsonPlaceholder struct {
-	FetchPostUrl string
 }
 
 type PostgresConfig struct {
@@ -92,11 +68,4 @@ type PostgresConfig struct {
 	Password string
 	DBName   string
 	SSLMode  string
-}
-
-type RedisConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
 }

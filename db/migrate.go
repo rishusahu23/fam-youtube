@@ -1,3 +1,6 @@
+//go:build migrate
+// +build migrate
+
 package main
 
 import (
@@ -25,6 +28,7 @@ func main() {
 		log.Fatalf("Usage: go run migrate.go <up|down>")
 	}
 
+	// creating database if not exists
 	if err = createDatabaseIfNotExists(conf, os.Args[2]); err != nil {
 		panic(err)
 	}
@@ -51,10 +55,14 @@ func main() {
 	}
 
 	switch action {
+	// make upgradeDB DB_NAME={db_name} will run migrations file present in db/{db_name} directory
 	case "up":
 		err = m.Up()
+	// make downgradeDB DB_NAME={db_name} will downgrade migrations by 1 step from files present in db/{db_name} directory
+	// as of now it won't work as down files are empty
 	case "down":
 		err = m.Steps(-1)
+	// useful when you need to unit test for dao layer
 	case "snapshot":
 		err = snapshotDB(dbURL, os.Args[2])
 	default:

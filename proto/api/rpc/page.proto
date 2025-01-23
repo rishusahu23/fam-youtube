@@ -13,8 +13,8 @@ message PageContextResponse {
 
 message PageContextRequest {
   oneof token {
-    string before_token = 1;
-    string after_token = 2;
+    string before_token = 1 [json_name = "before_token"];
+    string after_token = 2 [json_name = "after_token"];
   }
-  uint32 page_size = 3;
+  uint32 page_size = 3 [json_name = "page_size"];
 }

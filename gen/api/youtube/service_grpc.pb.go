@@ -29,7 +29,11 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type YoutubeServiceClient interface {
+	// api to fetch records from youtube api,
+	// api will called every 10 seconds from server in goroutine to fetch new data from google youtube api
 	TriggerJob(ctx context.Context, in *TriggerJobRequest, opts ...grpc.CallOption) (*TriggerJobResponse, error)
+	// GetPaginatedRecords gets paginated records specify pagesize,
+	// for first time before and after token, for second time use after token form first response
 	GetPaginatedRecords(ctx context.Context, in *GetPaginatedRecordsRequest, opts ...grpc.CallOption) (*GetPaginatedRecordsResponse, error)
 	GetFilteredRecords(ctx context.Context, in *GetFilteredRecordsRequest, opts ...grpc.CallOption) (*GetFilteredRecordsResponse, error)
 	GetPartialMatchRecords(ctx context.Context, in *GetPartialMatchRecordsRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsResponse, error)
@@ -83,7 +87,11 @@ func (c *youtubeServiceClient) GetPartialMatchRecords(ctx context.Context, in *G
 // All implementations must embed UnimplementedYoutubeServiceServer
 // for forward compatibility
 type YoutubeServiceServer interface {
+	// api to fetch records from youtube api,
+	// api will called every 10 seconds from server in goroutine to fetch new data from google youtube api
 	TriggerJob(context.Context, *TriggerJobRequest) (*TriggerJobResponse, error)
+	// GetPaginatedRecords gets paginated records specify pagesize,
+	// for first time before and after token, for second time use after token form first response
 	GetPaginatedRecords(context.Context, *GetPaginatedRecordsRequest) (*GetPaginatedRecordsResponse, error)
 	GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error)
 	GetPartialMatchRecords(context.Context, *GetPartialMatchRecordsRequest) (*GetPartialMatchRecordsResponse, error)

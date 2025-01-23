@@ -1,23 +1,8 @@
-MongoConfig:
-  MongoConnectTimeoutMS: 5000ms    # Connection timeout in milliseconds
-  MongoDBName: "test_database"     # Name of the database for testing
-  MongoDBURI: "mongodb://localhost:27017/?replicaSet=rs0" # MongoDB URI for local testing
-  MongoHost: "localhost"           # MongoDB host (used if URI is not set)
-  MongoMaxIdleTimeMS: 10000ms      # Max idle time for a connection in the pool
-  MongoMaxPoolSize: 10             # Maximum connections in the pool
-  MongoMinPoolSize: 1              # Minimum connections to keep in the pool
-  MongoPassword: "test_password"   # Password for authentication (if needed)
-  MongoPort: 27017                 # Port for MongoDB (default is 27017)
-
 Server:
   Port: 8150
+  # use 9090 port to test both grpc and http api
   GrpcPort: 9090
   GrpcHttpPort: 9091
-
-ExternalService:
-  JsonPlaceholder:
-    FetchPostUrl: "https://jsonplaceholder.typicode.com/posts"
-
 
 PostgresConfig:
   Host: "fam-youtube-postgres-1"
@@ -26,10 +11,5 @@ PostgresConfig:
   Password: "root"
   DBName: "youtube"
 
-RedisConfig:
-  Host: "localhost"
-  Port: 6379
-  User: "root"
-  Password: "root"
-
+# add api keys before server start
 ApiKeys: ["AIzaSyDmIAVUiZwiLGVgIidFCDKPqXN3ZePkitE","AIzaSyD6aqoQCvWC8fyH2WNZH-z3ZO2u9gDDxqc","AIzaSyDYZ6JM6Qg_gLVDJ13nzoau2619cnCSsNc"]

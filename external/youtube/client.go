@@ -38,6 +38,7 @@ func (c *ClientImpl) FetchYoutubeData(ctx context.Context, req *youtube.FetchYou
 		return nil, err
 	}
 	fmt.Println(venReq)
+	// will make api call to youtube api
 	resp, err := c.httpRequestHandler.MakeHttpRequest(ctx, venReq)
 	if err != nil {
 		return nil, err

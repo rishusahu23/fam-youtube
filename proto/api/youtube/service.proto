@@ -11,6 +11,8 @@ import "api/youtube/record/record.proto";
 import "google/api/annotations.proto";
 
 service YoutubeService {
+  // api to fetch records from youtube api,
+  // api will called every 10 seconds from server in goroutine to fetch new data from google youtube api
   rpc TriggerJob(TriggerJobRequest) returns (TriggerJobResponse) {
     option(google.api.http) = {
       post: "/api/v1/trigger-job"
@@ -18,6 +20,8 @@ service YoutubeService {
     };
   };
 
+  // GetPaginatedRecords gets paginated records specify pagesize,
+  // for first time before and after token, for second time use after token form first response
   rpc GetPaginatedRecords(GetPaginatedRecordsRequest) returns(GetPaginatedRecordsResponse) {
     option(google.api.http) = {
       post: "/api/v1/get-paginated-records"
@@ -54,7 +58,7 @@ message TriggerJobResponse {
 }
 
 message GetPaginatedRecordsRequest {
-  rpc.PageContextRequest page_context = 1;
+  rpc.PageContextRequest page_context = 1 [json_name = "page_context"];
 }
 
 message GetPaginatedRecordsResponse {

@@ -4,12 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	errors2 "github.com/rishusahu23/fam-youtube/pkg/errors"
-
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/pkg/errors"
-	gormv2 "gorm.io/gorm"
-
 	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 )
 
@@ -76,46 +71,4 @@ func GetPageToken(req *rpc.PageContextRequest) (*PageToken, error) {
 	token := &PageToken{}
 	err := token.Unmarshal(tokenStr)
 	return token, err
-}
-
-func AddPaginationOnCreatedAtColumn(db *gormv2.DB, pageToken *PageToken, pageSize uint32, tableName, colName string) *gormv2.DB {
-	return AddPaginationOnGivenColumn(db, pageToken, pageSize, tableName, colName)
-}
-
-func AddPaginationOnGivenColumn(db *gormv2.DB, pageToken *PageToken, pageSize uint32, tableName, colName string) *gormv2.DB {
-	columnName := fmt.Sprintf("%s.%s", tableName, colName)
-	if tableName == "" {
-		columnName = colName
-	}
-
-	if pageToken != nil {
-		if pageToken.IsReverse {
-			db = db.Order(columnName)
-			if pageToken.Timestamp != nil {
-				db = db.Where(columnName+" >= ?", pageToken.Timestamp.AsTime())
-			}
-		} else {
-			db = db.Order(columnName + " desc")
-			if pageToken.Timestamp != nil {
-				db = db.Where(columnName+" <= ?", pageToken.Timestamp.AsTime())
-			}
-		}
-		db = db.Offset(int(pageToken.Offset))
-	} else {
-		db = db.Order(columnName + " desc")
-	}
-	// fetch pageSize + 1 extra row to compute next page availability.
-	db = db.Limit(int(pageSize + 1))
-	return db
-}
-
-func AddPaginationOnGivenColumns(db *gormv2.DB, pageToken *PageToken, pageSize uint32, tableName string, colNames ...string) (*gormv2.DB, error) {
-	if len(colNames) == 0 {
-		return nil, errors.Wrap(errors2.ErrInvalidArgument, "no column to paginate on")
-	}
-	db = AddPaginationOnGivenColumn(db, pageToken, pageSize, tableName, colNames[0])
-	for i := 1; i < len(colNames); i++ {
-		db = db.Order(colNames[i])
-	}
-	return db, nil
 }
