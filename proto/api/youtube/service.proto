@@ -29,13 +29,21 @@ service YoutubeService {
     };
   };
 
+
+  // GetFilteredRecords will return the videos on the basis of title and description.
+  // if title or description is empty it will be ignored.
+  // it will do full text search and case should match.
+  // copy the title and description from db itself.
+  // generate url from /Users/rishusahu/go/src/github.com/rishusahu23/fam-youtube/main/main.go
+  // by copying title and description, generating url is necessary else it won't work
   rpc GetFilteredRecords(GetFilteredRecordsRequest) returns(GetFilteredRecordsResponse) {
     option (google.api.http) = {
       get: "/api/v1/records"
     };
   }
 
-
+  // GetPartialMatchRecords is Optimise version of GetFilteredRecords search api, so that it's able to search videos containing partial match for the search query in either video title or description.
+  //    - Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
   rpc GetPartialMatchRecords(GetPartialMatchRecordsRequest) returns(GetPartialMatchRecordsResponse) {
     option (google.api.http) = {
       get: "/api/v1/partial-match/records"
@@ -69,7 +77,7 @@ message GetPaginatedRecordsResponse {
     INTERNAL = 13;
   }
   rpc.Status status = 1;
-  rpc.PageContextResponse page_context = 2;
+  rpc.PageContextResponse page_context = 2 [json_name = "page_context"];
   repeated record.Record records = 3;
 }
 

@@ -5,10 +5,10 @@ package rpc;
 option go_package = "github.com/rishusahu23/fam-youtube/gen/api/rpc";
 
 message PageContextResponse {
-  string before_token = 1;
-  bool has_before = 2;
-  string after_token = 3;
-  bool has_after = 4;
+  string before_token = 1 [json_name = "before_token"];
+  bool has_before = 2 [json_name = "has_before"];
+  string after_token = 3 [json_name = "after_token"];
+  bool has_after = 4 [json_name = "has_after"];
 }
 
 message PageContextRequest {
