@@ -4,6 +4,7 @@ services:
   # Postgres service
   postgres:
     image: postgres:13
+    hostname: fam-youtube-postgres-1
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root

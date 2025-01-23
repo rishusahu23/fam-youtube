@@ -12,4 +12,4 @@ PostgresConfig:
   DBName: "youtube"
 
 # add api keys before server start
-ApiKeys: []
+ApiKeys: ["AIzaSyDmIAVUiZwiLGVgIidFCDKPqXN3ZePkitE","AIzaSyD6aqoQCvWC8fyH2WNZH-z3ZO2u9gDDxqc","AIzaSyDYZ6JM6Qg_gLVDJ13nzoau2619cnCSsNc"]
