@@ -120,3 +120,30 @@ func (r *RecordDaoImpl) GetByTitleAndDescription(ctx context.Context, title, des
 	}
 	return recProtos, nil
 }
+
+func (r *RecordDaoImpl) GetPartialMatchRecords(ctx context.Context, query string) ([]*record.Record, error) {
+	db := r.db.WithContext(ctx)
+
+	tsQuery := strings.ReplaceAll(query, " ", " & ")
+
+	// Perform the search with GORM
+	var videoModels []*model.Record
+	res := db.Raw(`
+        SELECT *,
+               ts_rank(to_tsvector('english', title || ' ' || description), to_tsquery(?)) AS rank
+        FROM records
+        WHERE to_tsvector('english', title || ' ' || description) @@ to_tsquery(?)
+        ORDER BY rank DESC
+    `, tsQuery, tsQuery).Scan(&videoModels)
+
+	// Handle errors
+	if res.Error != nil {
+		return nil, fmt.Errorf("error performing full-text search, err: %w", res.Error)
+	}
+
+	recProtos := make([]*record.Record, 0)
+	for _, recModel := range videoModels {
+		recProtos = append(recProtos, recModel.ConvertToProto())
+	}
+	return recProtos, nil
+}

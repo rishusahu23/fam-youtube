@@ -14,4 +14,5 @@ type Dao interface {
 	GetByTitleAndDescription(ctx context.Context, title, desc string) ([]*record.Record, error)
 	Create(ctx context.Context, rec *record.Record) error
 	GetPaginatedRecords(ctx context.Context, pageToken *pagination.PageToken, pageSize uint32) ([]*record.Record, *rpc.PageContextResponse, error)
+	GetPartialMatchRecords(ctx context.Context, query string) ([]*record.Record, error)
 }

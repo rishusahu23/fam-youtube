@@ -144,3 +144,14 @@ func (s *Service) GetFilteredRecords(ctx context.Context, req *youtubePb.GetFilt
 		Records: resp,
 	}, nil
 }
+
+func (s *Service) GetPartialMatchRecords(ctx context.Context, req *youtubePb.GetPartialMatchRecordsRequest) (*youtubePb.GetPartialMatchRecordsResponse, error) {
+	resp, err := s.dao.GetPartialMatchRecords(ctx, req.GetQuery())
+	if err != nil {
+		return nil, err
+	}
+	return &youtubePb.GetPartialMatchRecordsResponse{
+		Status:  rpc.StatusOk(),
+		Records: resp,
+	}, nil
+}

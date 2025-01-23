@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	YoutubeService_TriggerJob_FullMethodName          = "/youtube.YoutubeService/TriggerJob"
-	YoutubeService_GetPaginatedRecords_FullMethodName = "/youtube.YoutubeService/GetPaginatedRecords"
-	YoutubeService_GetFilteredRecords_FullMethodName  = "/youtube.YoutubeService/GetFilteredRecords"
+	YoutubeService_TriggerJob_FullMethodName             = "/youtube.YoutubeService/TriggerJob"
+	YoutubeService_GetPaginatedRecords_FullMethodName    = "/youtube.YoutubeService/GetPaginatedRecords"
+	YoutubeService_GetFilteredRecords_FullMethodName     = "/youtube.YoutubeService/GetFilteredRecords"
+	YoutubeService_GetPartialMatchRecords_FullMethodName = "/youtube.YoutubeService/GetPartialMatchRecords"
 )
 
 // YoutubeServiceClient is the client API for YoutubeService service.
@@ -31,6 +32,7 @@ type YoutubeServiceClient interface {
 	TriggerJob(ctx context.Context, in *TriggerJobRequest, opts ...grpc.CallOption) (*TriggerJobResponse, error)
 	GetPaginatedRecords(ctx context.Context, in *GetPaginatedRecordsRequest, opts ...grpc.CallOption) (*GetPaginatedRecordsResponse, error)
 	GetFilteredRecords(ctx context.Context, in *GetFilteredRecordsRequest, opts ...grpc.CallOption) (*GetFilteredRecordsResponse, error)
+	GetPartialMatchRecords(ctx context.Context, in *GetPartialMatchRecordsRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsResponse, error)
 }
 
 type youtubeServiceClient struct {
@@ -68,6 +70,15 @@ func (c *youtubeServiceClient) GetFilteredRecords(ctx context.Context, in *GetFi
 	return out, nil
 }
 
+func (c *youtubeServiceClient) GetPartialMatchRecords(ctx context.Context, in *GetPartialMatchRecordsRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsResponse, error) {
+	out := new(GetPartialMatchRecordsResponse)
+	err := c.cc.Invoke(ctx, YoutubeService_GetPartialMatchRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // YoutubeServiceServer is the server API for YoutubeService service.
 // All implementations must embed UnimplementedYoutubeServiceServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type YoutubeServiceServer interface {
 	TriggerJob(context.Context, *TriggerJobRequest) (*TriggerJobResponse, error)
 	GetPaginatedRecords(context.Context, *GetPaginatedRecordsRequest) (*GetPaginatedRecordsResponse, error)
 	GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error)
+	GetPartialMatchRecords(context.Context, *GetPartialMatchRecordsRequest) (*GetPartialMatchRecordsResponse, error)
 	mustEmbedUnimplementedYoutubeServiceServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedYoutubeServiceServer) GetPaginatedRecords(context.Context, *G
 }
 func (UnimplementedYoutubeServiceServer) GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFilteredRecords not implemented")
+}
+func (UnimplementedYoutubeServiceServer) GetPartialMatchRecords(context.Context, *GetPartialMatchRecordsRequest) (*GetPartialMatchRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPartialMatchRecords not implemented")
 }
 func (UnimplementedYoutubeServiceServer) mustEmbedUnimplementedYoutubeServiceServer() {}
 
@@ -158,6 +173,24 @@ func _YoutubeService_GetFilteredRecords_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YoutubeService_GetPartialMatchRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPartialMatchRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeServiceServer).GetPartialMatchRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: YoutubeService_GetPartialMatchRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeServiceServer).GetPartialMatchRecords(ctx, req.(*GetPartialMatchRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // YoutubeService_ServiceDesc is the grpc.ServiceDesc for YoutubeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var YoutubeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFilteredRecords",
 			Handler:    _YoutubeService_GetFilteredRecords_Handler,
+		},
+		{
+			MethodName: "GetPartialMatchRecords",
+			Handler:    _YoutubeService_GetPartialMatchRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

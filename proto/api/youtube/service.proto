@@ -30,6 +30,13 @@ service YoutubeService {
       get: "/api/v1/records"
     };
   }
+
+
+  rpc GetPartialMatchRecords(GetPartialMatchRecordsRequest) returns(GetPartialMatchRecordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/partial-match/records"
+    };
+  }
 }
 
 message TriggerJobRequest {
@@ -77,3 +84,20 @@ message GetFilteredRecordsResponse {
   rpc.Status status = 1;
   repeated record.Record records = 2;
 }
+
+
+message GetPartialMatchRecordsRequest {
+  string query = 1;
+}
+
+message GetPartialMatchRecordsResponse {
+  enum Status {
+    OK = 0;
+    INVALID_ARGUMENT = 3;
+    NO_RECORD_FOUND = 5;
+    INTERNAL = 13;
+  }
+  rpc.Status status = 1;
+  repeated record.Record records = 2;
+}
+

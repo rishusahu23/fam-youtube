@@ -9,6 +9,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rishusahu23/fam-youtube/config"
 	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
+	"github.com/rishusahu23/fam-youtube/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube/wire"
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 // Combined gRPC and HTTP server using cmux
@@ -72,13 +74,14 @@ func startGrpcServer(ctx context.Context, lis net.Listener, conf *config.Config)
 		"disable",
 	)
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
-
+	initialiseYSvc := wire.InitialiseYoutubeService(conf, db)
+	youtubePb.RegisterYoutubeServiceServer(s, initialiseYSvc)
 	if err != nil {
 		panic(err)
 	}
-
-	youtubePb.RegisterYoutubeServiceServer(s, wire.InitialiseYoutubeService(conf, db))
-
+	go func() {
+		triggerJob(ctx, initialiseYSvc)
+	}()
 	log.Printf("gRPC server running")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve gRPC server: %v", err)
@@ -117,4 +120,28 @@ func main() {
 
 	// Block main goroutine indefinitely (this will keep the servers running)
 	select {}
+}
+
+func triggerJob(ctx context.Context, s *youtube.Service) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			// Gracefully stop the scheduler when context is canceled
+			fmt.Println("Scheduler stopped.")
+			return
+		case <-ticker.C:
+			// Call TriggerJob every 10 minutes
+			go func() {
+				_, err := s.TriggerJob(ctx, &youtubePb.TriggerJobRequest{})
+				if err != nil {
+					log.Printf("TriggerJob failed: %v", err)
+				} else {
+					log.Println("TriggerJob executed successfully")
+				}
+			}()
+		}
+	}
 }
