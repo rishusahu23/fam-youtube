@@ -1,6 +1,3 @@
-//go:build migrate
-// +build migrate
-
 package main
 
 import (
@@ -28,6 +25,10 @@ func main() {
 		log.Fatalf("Usage: go run migrate.go <up|down>")
 	}
 
+	if err = createDatabaseIfNotExists(conf, os.Args[2]); err != nil {
+		panic(err)
+	}
+
 	// Construct PostgreSQL connection string
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		conf.PostgresConfig.User,
@@ -51,9 +52,6 @@ func main() {
 
 	switch action {
 	case "up":
-		if err = createDatabaseIfNotExists(dbURL, os.Args[2]); err != nil {
-			panic(err)
-		}
 		err = m.Up()
 	case "down":
 		err = m.Steps(-1)
@@ -133,7 +131,16 @@ func snapshotDB(dbURL, dbName string) error {
 }
 
 // createDatabaseIfNotExists checks if the database exists and creates it if it doesn't.
-func createDatabaseIfNotExists(dbUrl, dbName string) error {
+func createDatabaseIfNotExists(conf *config.Config, dbName string) error {
+	// Construct PostgreSQL connection string
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		conf.PostgresConfig.User,
+		conf.PostgresConfig.Password,
+		conf.PostgresConfig.Host,
+		conf.PostgresConfig.Port,
+		"postgres",
+		"disable",
+	)
 	db, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		return fmt.Errorf("failed to connect to default database: %v", err)

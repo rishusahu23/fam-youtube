@@ -5,11 +5,12 @@ package external.youtube;
 option go_package = "github.com/rishusahu23/fam-youtube/gen/api/external/youtube";
 
 message FetchYoutubeDataListRequest {
-
+  string api_key = 1 [json_name = "api_key"];
 }
 
 message  FetchYoutubeDataListResponse {
   repeated Item items = 1 [json_name = "items"];
+  error error = 2 [json_name = "error"];
 }
 
 message Item {
@@ -32,4 +33,8 @@ message Thumbnail {
 
 message RawId {
   string video_id = 1 [json_name = "videoId"];
+}
+
+message error {
+  int32 code = 1 [json_name = "code"];
 }

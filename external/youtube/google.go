@@ -15,7 +15,7 @@ func (c *ClientImpl) NewGoogleRequest(req interface{}) pkg.SyncRequest {
 		return &google.FetchYoutubeDataRequest{
 			Method: contants.GetMethod,
 			Req:    fetchReq,
-			Url:    "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&publishedAfter=2025-01-01T00:00:00Z&q=politics&key=AIzaSyD6aqoQCvWC8fyH2WNZH-z3ZO2u9gDDxqc",
+			Url:    "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&publishedAfter=2025-01-01T00:00:00Z&q=politics&key=%v",
 		}
 	default:
 		fmt.Println(v)

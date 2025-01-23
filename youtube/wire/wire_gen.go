@@ -25,7 +25,7 @@ func InitialiseYoutubeService(conf *config.Config, db *gorm.DB) *youtube.Service
 	clientImpl := youtube2.NewYoutubeClientImpl(httpRequestHandler, conf)
 	youtubeClient := youtubeProvider(clientImpl)
 	recordDaoImpl := dao.NewRecordDaoImpl(db)
-	service := youtube.NewService(youtubeClient, recordDaoImpl)
+	service := youtube.NewService(conf, youtubeClient, recordDaoImpl)
 	return service
 }
 

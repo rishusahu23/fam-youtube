@@ -3,11 +3,14 @@ package youtube
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
+	"github.com/rishusahu23/fam-youtube/config"
 	"github.com/rishusahu23/fam-youtube/external/youtube"
 	vgPb "github.com/rishusahu23/fam-youtube/gen/api/external/youtube"
 	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	custerr "github.com/rishusahu23/fam-youtube/pkg/errors"
 	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/dao"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,33 +21,59 @@ type Service struct {
 	youtubePb.UnimplementedYoutubeServiceServer
 	googleClient youtube.Client
 	dao          dao.Dao
+	ind          int
+	conf         *config.Config
 }
 
-func NewService(googleClient youtube.Client, dao dao.Dao) *Service {
+func NewService(conf *config.Config, googleClient youtube.Client, dao dao.Dao) *Service {
 	return &Service{
 		googleClient: googleClient,
 		dao:          dao,
+		ind:          0,
+		conf:         conf,
 	}
 }
 
 var _ youtubePb.YoutubeServiceServer = (*Service)(nil)
 
 func (s *Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
-	resp, err := s.googleClient.FetchYoutubeData(ctx, &vgPb.FetchYoutubeDataListRequest{})
+	for ind, _ := range s.conf.ApiKeys {
+		err := s.triggerJob(ctx, &vgPb.FetchYoutubeDataListRequest{
+			ApiKey: s.conf.ApiKeys[ind],
+		})
+		if err != nil && errors.Is(err, custerr.ErrQuotaExceeded) {
+			s.ind = (s.ind + 1) % len(s.conf.ApiKeys)
+			continue
+		}
+		if err != nil {
+			return &youtubePb.TriggerJobResponse{
+				Status: rpc.StatusInternal(err.Error()),
+			}, err
+		}
+		return &youtubePb.TriggerJobResponse{
+			Status: rpc.StatusOk(),
+		}, nil
+	}
+
+	return &youtubePb.TriggerJobResponse{
+		Status: rpc.StatusInternal(""),
+	}, nil
+
+}
+
+func (s *Service) triggerJob(ctx context.Context, request *vgPb.FetchYoutubeDataListRequest) error {
+	resp, err := s.googleClient.FetchYoutubeData(ctx, request)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	records := getRecord(resp.GetItems())
 	for _, item := range records {
 		if err = s.dao.Create(ctx, item); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	fmt.Println(resp)
-	return &youtubePb.TriggerJobResponse{
-		Status: rpc.StatusOk(),
-	}, nil
+	return nil
 }
 
 func getRecord(items []*vgPb.Item) []*record.Record {

@@ -56,6 +56,7 @@ type Config struct {
 	ExternalService *ExternalService
 	PostgresConfig  *PostgresConfig
 	RedisConfig     *RedisConfig
+	ApiKeys         []string
 }
 
 type Server struct {
