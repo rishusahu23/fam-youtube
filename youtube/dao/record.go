@@ -86,7 +86,6 @@ func (r *RecordDaoImpl) GetPaginatedRecords(ctx context.Context, pageToken *pagi
 		sort.Slice(recModels, func(i, j int) bool {
 			return recModels[i].PublishedAt.After(recModels[j].PublishedAt)
 		})
-
 	}
 	rows, pageCtxResp, err := pagination.NewPageCtxResp(pageToken, int(pageSize), model.Records(recModels))
 	if err != nil {

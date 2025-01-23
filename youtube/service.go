@@ -41,9 +41,9 @@ var _ youtubePb.YoutubeServiceServer = (*Service)(nil)
 // TriggerJob api will be used to fetch data from youtube google api.
 // Do not need to trigger this, it will be called automatically from server every 10 seconds.
 func (s *Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
-	for ind, _ := range s.conf.ApiKeys {
+	for i := 0; i < len(s.conf.ApiKeys); i++ {
 		err := s.triggerJob(ctx, &vgPb.FetchYoutubeDataListRequest{
-			ApiKey: s.conf.ApiKeys[ind],
+			ApiKey: s.conf.ApiKeys[s.ind],
 		})
 		// If quota of allowed request finished, we try with new key until all keys got exhausted
 		if err != nil && errors.Is(err, custerr.ErrQuotaExceeded) {
@@ -86,10 +86,9 @@ func (s *Service) triggerJob(ctx context.Context, request *vgPb.FetchYoutubeData
 
 func getRecord(items []*vgPb.Item) []*record.Record {
 	records := make([]*record.Record, len(items))
-	timeStr := "2025-01-21T17:56:19Z"
 
 	for i, item := range items {
-		t, err := time.Parse(time.RFC3339, timeStr)
+		t, err := time.Parse(time.RFC3339, item.GetSnippet().GetPublishedAt())
 		if err != nil {
 			fmt.Printf("Error parsing time: %v\n", err)
 			continue

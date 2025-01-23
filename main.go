@@ -123,7 +123,7 @@ func main() {
 }
 
 func triggerJob(ctx context.Context, s *youtube.Service) {
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -137,9 +137,9 @@ func triggerJob(ctx context.Context, s *youtube.Service) {
 			go func() {
 				_, err := s.TriggerJob(ctx, &youtubePb.TriggerJobRequest{})
 				if err != nil {
-					log.Printf("TriggerJob failed: %v", err)
+					fmt.Printf("TriggerJob failed: %v", err)
 				} else {
-					log.Println("TriggerJob executed successfully")
+					fmt.Println("TriggerJob executed successfully")
 				}
 			}()
 		}
