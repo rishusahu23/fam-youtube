@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Postgres service
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: youtube
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - fam-network
+
+  # App service
+  app:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres  # Service name for postgres container
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: youtube
+    ports:
+      - "9090:9090"
+    networks:
+      - fam-network
+    command: ["sh", "-c", "wait-for-it postgres:5432 -- make upgradeDB DB_NAME=youtube && ./fam-youtube"]
+
+networks:
+  fam-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

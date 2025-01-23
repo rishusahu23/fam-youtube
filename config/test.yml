@@ -20,7 +20,7 @@ ExternalService:
 
 
 PostgresConfig:
-  Host: "localhost"
+  Host: "fam-youtube-postgres-1"
   Port: 5432
   User: "root"
   Password: "root"
