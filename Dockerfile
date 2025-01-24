@@ -42,4 +42,4 @@ RUN curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wai
     echo "wait-for-it script downloaded and made executable."
 
 # Set the default command to run (wait for postgres, then start app)
-CMD ["sh", "-c", "wait-for-it postgres:5432 -- make upgradeDB DB_NAME=youtube && ./fam-youtube"]
+CMD ["sh", "-c", "wait-for-it postgres:5432 wait-for-it elasticsearch:9200 wait-for-it elasticsearch:9300 -- make upgradeDB DB_NAME=youtube && ./fam-youtube"]

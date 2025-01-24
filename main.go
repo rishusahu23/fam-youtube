@@ -123,7 +123,7 @@ func main() {
 }
 
 func triggerJob(ctx context.Context, s *youtube.Service) {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 
 	for {

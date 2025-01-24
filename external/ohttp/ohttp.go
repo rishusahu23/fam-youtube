@@ -31,6 +31,7 @@ func (h *HttpRequestHandler) MakeHttpRequest(ctx context.Context, request pkg.Sy
 		return nil, fmt.Errorf("URL could not be parsed: %w", err)
 	}
 	reqBody, err := request.Marshal()
+	fmt.Println("reqBody:", string(reqBody))
 	if err != nil {
 		return nil, err
 	}

@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	YoutubeService_TriggerJob_FullMethodName             = "/youtube.YoutubeService/TriggerJob"
-	YoutubeService_GetPaginatedRecords_FullMethodName    = "/youtube.YoutubeService/GetPaginatedRecords"
-	YoutubeService_GetFilteredRecords_FullMethodName     = "/youtube.YoutubeService/GetFilteredRecords"
-	YoutubeService_GetPartialMatchRecords_FullMethodName = "/youtube.YoutubeService/GetPartialMatchRecords"
+	YoutubeService_TriggerJob_FullMethodName                    = "/youtube.YoutubeService/TriggerJob"
+	YoutubeService_GetPaginatedRecords_FullMethodName           = "/youtube.YoutubeService/GetPaginatedRecords"
+	YoutubeService_GetFilteredRecords_FullMethodName            = "/youtube.YoutubeService/GetFilteredRecords"
+	YoutubeService_GetPartialMatchRecords_FullMethodName        = "/youtube.YoutubeService/GetPartialMatchRecords"
+	YoutubeService_GetPartialMatchRecordsFromElk_FullMethodName = "/youtube.YoutubeService/GetPartialMatchRecordsFromElk"
 )
 
 // YoutubeServiceClient is the client API for YoutubeService service.
@@ -35,8 +36,19 @@ type YoutubeServiceClient interface {
 	// GetPaginatedRecords gets paginated records specify pagesize,
 	// for first time before and after token, for second time use after token form first response
 	GetPaginatedRecords(ctx context.Context, in *GetPaginatedRecordsRequest, opts ...grpc.CallOption) (*GetPaginatedRecordsResponse, error)
+	// GetFilteredRecords will return the videos on the basis of title and description.
+	// if title or description is empty it will be ignored.
+	// it will do full text search and case should match.
+	// copy the title and description from db itself.
+	// generate url from /Users/rishusahu/go/src/github.com/rishusahu23/fam-youtube/main/main.go
+	// by copying title and description, generating url is necessary else it won't work
 	GetFilteredRecords(ctx context.Context, in *GetFilteredRecordsRequest, opts ...grpc.CallOption) (*GetFilteredRecordsResponse, error)
+	// GetPartialMatchRecords is Optimise version of GetFilteredRecords search api, so that it's able to search videos containing partial match for the search query in either video title or description.
+	//   - Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
 	GetPartialMatchRecords(ctx context.Context, in *GetPartialMatchRecordsRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsResponse, error)
+	// GetPartialMatchRecordsFromElk is Optimise version of GetFilteredRecords search api, so that it's able to search videos containing partial match for the search query in either video title or description.
+	//   - Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
+	GetPartialMatchRecordsFromElk(ctx context.Context, in *GetPartialMatchRecordsFromElkRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsFromElkResponse, error)
 }
 
 type youtubeServiceClient struct {
@@ -83,6 +95,15 @@ func (c *youtubeServiceClient) GetPartialMatchRecords(ctx context.Context, in *G
 	return out, nil
 }
 
+func (c *youtubeServiceClient) GetPartialMatchRecordsFromElk(ctx context.Context, in *GetPartialMatchRecordsFromElkRequest, opts ...grpc.CallOption) (*GetPartialMatchRecordsFromElkResponse, error) {
+	out := new(GetPartialMatchRecordsFromElkResponse)
+	err := c.cc.Invoke(ctx, YoutubeService_GetPartialMatchRecordsFromElk_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // YoutubeServiceServer is the server API for YoutubeService service.
 // All implementations must embed UnimplementedYoutubeServiceServer
 // for forward compatibility
@@ -93,8 +114,19 @@ type YoutubeServiceServer interface {
 	// GetPaginatedRecords gets paginated records specify pagesize,
 	// for first time before and after token, for second time use after token form first response
 	GetPaginatedRecords(context.Context, *GetPaginatedRecordsRequest) (*GetPaginatedRecordsResponse, error)
+	// GetFilteredRecords will return the videos on the basis of title and description.
+	// if title or description is empty it will be ignored.
+	// it will do full text search and case should match.
+	// copy the title and description from db itself.
+	// generate url from /Users/rishusahu/go/src/github.com/rishusahu23/fam-youtube/main/main.go
+	// by copying title and description, generating url is necessary else it won't work
 	GetFilteredRecords(context.Context, *GetFilteredRecordsRequest) (*GetFilteredRecordsResponse, error)
+	// GetPartialMatchRecords is Optimise version of GetFilteredRecords search api, so that it's able to search videos containing partial match for the search query in either video title or description.
+	//   - Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
 	GetPartialMatchRecords(context.Context, *GetPartialMatchRecordsRequest) (*GetPartialMatchRecordsResponse, error)
+	// GetPartialMatchRecordsFromElk is Optimise version of GetFilteredRecords search api, so that it's able to search videos containing partial match for the search query in either video title or description.
+	//   - Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
+	GetPartialMatchRecordsFromElk(context.Context, *GetPartialMatchRecordsFromElkRequest) (*GetPartialMatchRecordsFromElkResponse, error)
 	mustEmbedUnimplementedYoutubeServiceServer()
 }
 
@@ -113,6 +145,9 @@ func (UnimplementedYoutubeServiceServer) GetFilteredRecords(context.Context, *Ge
 }
 func (UnimplementedYoutubeServiceServer) GetPartialMatchRecords(context.Context, *GetPartialMatchRecordsRequest) (*GetPartialMatchRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPartialMatchRecords not implemented")
+}
+func (UnimplementedYoutubeServiceServer) GetPartialMatchRecordsFromElk(context.Context, *GetPartialMatchRecordsFromElkRequest) (*GetPartialMatchRecordsFromElkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPartialMatchRecordsFromElk not implemented")
 }
 func (UnimplementedYoutubeServiceServer) mustEmbedUnimplementedYoutubeServiceServer() {}
 
@@ -199,6 +234,24 @@ func _YoutubeService_GetPartialMatchRecords_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YoutubeService_GetPartialMatchRecordsFromElk_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPartialMatchRecordsFromElkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeServiceServer).GetPartialMatchRecordsFromElk(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: YoutubeService_GetPartialMatchRecordsFromElk_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeServiceServer).GetPartialMatchRecordsFromElk(ctx, req.(*GetPartialMatchRecordsFromElkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // YoutubeService_ServiceDesc is the grpc.ServiceDesc for YoutubeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -221,6 +274,10 @@ var YoutubeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPartialMatchRecords",
 			Handler:    _YoutubeService_GetPartialMatchRecords_Handler,
+		},
+		{
+			MethodName: "GetPartialMatchRecordsFromElk",
+			Handler:    _YoutubeService_GetPartialMatchRecordsFromElk_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

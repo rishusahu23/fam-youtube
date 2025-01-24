@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package external.elasticsearch;
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/external/elasticsearch";
+
+message FeedToElasticSearchRequest {
+  int64 id = 1 [json_name='id'];              // Video ID
+  string title = 2 [json_name='title'];           // Video title
+  string description = 3 [json_name='description'];     // Video description
+  string published_at = 4 [json_name='published_at'];   // Video published timestamp (ISO 8601 format)
+}
+
+message FeedToElasticSearchResponse {
+  string result = 2 [json_name='result'];           // Video title
+}
