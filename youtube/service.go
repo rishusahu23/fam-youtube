@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/rishusahu23/fam-youtube/config"
+	"github.com/rishusahu23/fam-youtube/external/elasticsearch"
 	"github.com/rishusahu23/fam-youtube/external/youtube"
+	vgPb2 "github.com/rishusahu23/fam-youtube/gen/api/external/elasticsearch"
 	vgPb "github.com/rishusahu23/fam-youtube/gen/api/external/youtube"
 	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	"github.com/rishusahu23/fam-youtube/pkg/datetime"
 	custerr "github.com/rishusahu23/fam-youtube/pkg/errors"
 	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/dao"
@@ -25,14 +28,16 @@ type Service struct {
 	dao          dao.Dao
 	ind          int
 	conf         *config.Config
+	elkClient    elasticsearch.ElkClient
 }
 
-func NewService(conf *config.Config, googleClient youtube.Client, dao dao.Dao) *Service {
+func NewService(conf *config.Config, googleClient youtube.Client, dao dao.Dao, elkClient elasticsearch.ElkClient) *Service {
 	return &Service{
 		googleClient: googleClient,
 		dao:          dao,
 		ind:          0,
 		conf:         conf,
+		elkClient:    elkClient,
 	}
 }
 
@@ -77,7 +82,20 @@ func (s *Service) triggerJob(ctx context.Context, request *vgPb.FetchYoutubeData
 	records := getRecord(resp.GetItems())
 	for _, item := range records {
 		if err = s.dao.Create(ctx, item); err != nil {
+			if errors.Is(err, custerr.ErrDuplicateEntry) {
+				continue
+			}
 			return err
+		}
+		if _, err = s.elkClient.FeedToElasticSearch(ctx, &vgPb2.FeedToElasticSearchRequest{
+			Id:          time.Now().UnixNano(),
+			Title:       item.GetTitle(),
+			Description: item.GetDescription(),
+			PublishedAt: item.GetPublishedAt().AsTime().UTC().Format("2006-01-02T15:04:05Z"),
+			CreatedAt:   item.GetCreatedAt().AsTime().UTC().Format("2006-01-02T15:04:05Z"),
+			UpdatedAt:   item.GetUpdatedAt().AsTime().UTC().Format("2006-01-02T15:04:05Z"),
+		}); err != nil {
+			fmt.Println("error in feeding to elk", err)
 		}
 	}
 
@@ -88,12 +106,7 @@ func getRecord(items []*vgPb.Item) []*record.Record {
 	records := make([]*record.Record, len(items))
 
 	for i, item := range items {
-		t, err := time.Parse(time.RFC3339, item.GetSnippet().GetPublishedAt())
-		if err != nil {
-			fmt.Printf("Error parsing time: %v\n", err)
-			continue
-		}
-
+		publishedAt, _ := datetime.StringToTimestamp(item.GetSnippet().GetPublishedAt())
 		thumbnails := make(map[string]*record.Thumbnail)
 		for key, val := range item.GetSnippet().GetThumbnails() {
 			thumbnails[key] = &record.Thumbnail{
@@ -107,7 +120,7 @@ func getRecord(items []*vgPb.Item) []*record.Record {
 			Id:          item.GetRawId().GetVideoId(),
 			Title:       item.GetSnippet().GetTitle(),
 			Description: item.GetSnippet().GetDescription(),
-			PublishedAt: timestamppb.New(t),
+			PublishedAt: publishedAt,
 			Metadata: &record.Metadata{
 				Thumbnails: thumbnails,
 			},
@@ -161,4 +174,43 @@ func (s *Service) GetPartialMatchRecords(ctx context.Context, req *youtubePb.Get
 		Status:  rpc.StatusOk(),
 		Records: resp,
 	}, nil
+}
+
+func (s *Service) GetPartialMatchRecordsFromElk(ctx context.Context, req *youtubePb.GetPartialMatchRecordsFromElkRequest) (*youtubePb.GetPartialMatchRecordsFromElkResponse, error) {
+	resp, err := s.elkClient.GetRecordsFromElk(ctx, &vgPb2.GetRecordsFromElkRequest{
+		Query: &vgPb2.Query{
+			MultiMatch: &vgPb2.MultiMatchQuery{
+				Query:  req.GetQuery(),
+				Fields: []string{"title", "description"},
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	videos := make([]*record.Record, 0)
+	for _, video := range resp.GetHits().GetHits() {
+		videos = append(videos, &record.Record{
+			Title:       video.GetXSource().GetTitle(),
+			Description: video.GetXSource().GetDescription(),
+			PublishedAt: getTimestampFromString(video.GetXSource().GetPublishedAt()),
+			CreatedAt:   getTimestampFromString(video.GetXSource().GetCreatedAt()),
+			UpdatedAt:   getTimestampFromString(video.GetXSource().GetUpdatedAt()),
+			Id:          video.GetXSource().GetId(),
+		})
+	}
+	return &youtubePb.GetPartialMatchRecordsFromElkResponse{
+		Status:  rpc.StatusOk(),
+		Records: videos,
+	}, nil
+}
+
+func getTimestampFromString(timeStr string) *timestamppb.Timestamp {
+	t, err := time.Parse(time.RFC3339, timeStr)
+	if err != nil {
+		fmt.Printf("Error parsing time: %v\n", err)
+		return nil
+	}
+	return timestamppb.New(t)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/google/wire"
 	"github.com/rishusahu23/fam-youtube/gen/api/rpc"
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
+	"github.com/rishusahu23/fam-youtube/pkg/errors"
 	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/model"
 	"gorm.io/gorm"
@@ -40,7 +41,7 @@ func (r *RecordDaoImpl) Create(ctx context.Context, rec *record.Record) error {
 	recModel := model.ConvertToModel(rec)
 	if err := r.db.Create(&recModel).Error; err != nil {
 		if isDuplicateEntry(err) {
-			return nil
+			return errors.ErrDuplicateEntry
 		}
 		return err
 	}

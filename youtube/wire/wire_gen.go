@@ -9,6 +9,7 @@ package wire
 import (
 	"crypto/tls"
 	"github.com/rishusahu23/fam-youtube/config"
+	"github.com/rishusahu23/fam-youtube/external/elasticsearch"
 	"github.com/rishusahu23/fam-youtube/external/ohttp"
 	youtube2 "github.com/rishusahu23/fam-youtube/external/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube"
@@ -25,7 +26,9 @@ func InitialiseYoutubeService(conf *config.Config, db *gorm.DB) *youtube.Service
 	clientImpl := youtube2.NewYoutubeClientImpl(httpRequestHandler, conf)
 	youtubeClient := youtubeProvider(clientImpl)
 	recordDaoImpl := dao.NewRecordDaoImpl(db)
-	service := youtube.NewService(conf, youtubeClient, recordDaoImpl)
+	elkClientImpl := elasticsearch.NewElkClient(httpRequestHandler, conf)
+	elkClient := elkProvider(elkClientImpl)
+	service := youtube.NewService(conf, youtubeClient, recordDaoImpl, elkClient)
 	return service
 }
 
@@ -40,6 +43,10 @@ func getHttpClient() *http.Client {
 }
 
 func youtubeProvider(impl *youtube2.ClientImpl) youtube2.Client {
+	return impl
+}
+
+func elkProvider(impl *elasticsearch.ElkClientImpl) elasticsearch.ElkClient {
 	return impl
 }
 

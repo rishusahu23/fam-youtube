@@ -16,6 +16,20 @@ services:
     networks:
       - fam-network
 
+  elasticsearch:
+    image: elasticsearch:8.9.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - fam-network
+
   # App service
   app:
     build: .
@@ -39,4 +53,6 @@ networks:
 
 volumes:
   postgres-data:
+    driver: local
+  elasticsearch-data:
     driver: local

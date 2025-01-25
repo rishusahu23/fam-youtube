@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package external.elasticsearch;
+
+option go_package = "github.com/rishusahu23/fam-youtube/gen/api/external/elasticsearch";
+
+message GetRecordsFromElkRequest {
+  Query query = 1 [json_name = "query"];
+}
+
+
+message MultiMatchQuery {
+  string query = 1 [json_name = "query"];
+  repeated string fields = 2 [json_name = "fields"];
+}
+
+message Query {
+  MultiMatchQuery multi_match = 1 [json_name = "multi_match"];
+}
+
+message GetRecordsFromElkResponse {
+  Hits hits = 1 [json_name = "hits"];
+}
+
+
+message Source {
+  string title = 1 [json_name = "title"];
+  string description = 2 [json_name = "description"];
+  string published_at = 3 [json_name = "published_at"];
+  string id = 4 [json_name='id'];
+  string created_at = 5 [json_name='created_at'];
+  string updated_at = 6 [json_name='updated_at'];
+}
+
+message Hit {
+  Source _source = 1 [json_name = "_source"];
+}
+
+message Hits {
+  repeated Hit hits = 1 [json_name = "hits"];
+}
