@@ -83,3 +83,13 @@ curl --location --request GET 'http://localhost:9090/api/v1/partial-match/record
             }
 }'
 ```
+
+- This curl is more Optimise version of GetFilteredRecords search api, which uses elastic search, so that it's able to search videos containing partial match for the search query in either video title or description.
+  Ex 1: A video with title `*How to make tea?*` should match for the search query `tea how`
+```
+curl --location 'http://localhost:9090/api/v1/partial-elk/records' \
+--header 'Content-Type: application/json' \
+--data '{
+    "query":"M.Sports: "
+}'
+```
