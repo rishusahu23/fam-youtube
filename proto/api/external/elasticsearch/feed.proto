@@ -9,6 +9,8 @@ message FeedToElasticSearchRequest {
   string title = 2 [json_name='title'];           // Video title
   string description = 3 [json_name='description'];     // Video description
   string published_at = 4 [json_name='published_at'];   // Video published timestamp (ISO 8601 format)
+  string created_at = 5 [json_name='created_at'];
+  string updated_at = 6 [json_name='updated_at'];
 }
 
 message FeedToElasticSearchResponse {

@@ -22,17 +22,17 @@ func (f *GetRecordsFromElkRequest) GetURL() string {
 }
 
 func (f *GetRecordsFromElkRequest) GetResponse() pkg.Response {
-	return &FeedToElasticSearchResponse{}
+	return &GetRecordsFromElkResponse{}
 }
 
 func (f *GetRecordsFromElkRequest) Marshal() ([]byte, error) {
 	return protojson.Marshal(f.Req)
 }
 
-type GetRecordsFromElkRequestResponse struct {
+type GetRecordsFromElkResponse struct {
 }
 
-func (f *GetRecordsFromElkRequest) Unmarshal(b []byte) (interface{}, error) {
+func (f *GetRecordsFromElkResponse) Unmarshal(b []byte) (interface{}, error) {
 	vgRes := &vgPb.GetRecordsFromElkResponse{}
 	um := protojson.UnmarshalOptions{
 		AllowPartial:   true,

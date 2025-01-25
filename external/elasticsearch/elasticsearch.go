@@ -15,7 +15,7 @@ func (e *ElkClientImpl) NewElasticSearchRequest(req interface{}) pkg.SyncRequest
 		return &elk.FeedToElasticSearchRequest{
 			Method: contants.PostMethod,
 			Req:    feedReq,
-			Url:    "http://elasticsearch:9200/videos/_doc/1",
+			Url:    "http://elasticsearch:9200/videos/_doc",
 		}
 	case *elasticsearch.GetRecordsFromElkRequest:
 		fetchReq := req.(*elasticsearch.GetRecordsFromElkRequest)

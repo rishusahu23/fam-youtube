@@ -7,4 +7,5 @@ var (
 	ErrInvalidArgument = errors.New("invalid argument")
 	ErrQuotaExceeded   = errors.New("quota exceeded")
 	ErrInternalServer  = errors.New("internal server error")
+	ErrDuplicateEntry  = errors.New("duplicate entry")
 )

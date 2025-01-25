@@ -27,6 +27,9 @@ message Source {
   string title = 1 [json_name = "title"];
   string description = 2 [json_name = "description"];
   string published_at = 3 [json_name = "published_at"];
+  string id = 4 [json_name='id'];
+  string created_at = 5 [json_name='created_at'];
+  string updated_at = 6 [json_name='updated_at'];
 }
 
 message Hit {
