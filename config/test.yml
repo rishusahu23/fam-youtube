@@ -13,3 +13,5 @@ PostgresConfig:
 
 # add api keys before server start
 ApiKeys: ["AIzaSyDYZ6JM6Qg_gLVDJ13nzoau2619cnCSsNc"]
+
+Environment: test

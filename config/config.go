@@ -53,6 +53,7 @@ type Config struct {
 	Server         *Server
 	PostgresConfig *PostgresConfig
 	ApiKeys        []string
+	Environment    string
 }
 
 type Server struct {
