@@ -14,8 +14,10 @@ import (
 	"github.com/rishusahu23/fam-youtube/gen/api/youtube/record"
 	"github.com/rishusahu23/fam-youtube/pkg/datetime"
 	custerr "github.com/rishusahu23/fam-youtube/pkg/errors"
+	"github.com/rishusahu23/fam-youtube/pkg/logger"
 	"github.com/rishusahu23/fam-youtube/pkg/pagination"
 	"github.com/rishusahu23/fam-youtube/youtube/dao"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -46,6 +48,7 @@ var _ youtubePb.YoutubeServiceServer = (*Service)(nil)
 // TriggerJob api will be used to fetch data from youtube google api.
 // Do not need to trigger this, it will be called automatically from server every 10 seconds.
 func (s *Service) TriggerJob(ctx context.Context, request *youtubePb.TriggerJobRequest) (*youtubePb.TriggerJobResponse, error) {
+	logger.Error(ctx, "another profile update in progress", zap.Any("request", request))
 	for i := 0; i < len(s.conf.ApiKeys); i++ {
 		err := s.triggerJob(ctx, &vgPb.FetchYoutubeDataListRequest{
 			ApiKey: s.conf.ApiKeys[s.ind],

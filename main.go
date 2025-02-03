@@ -9,6 +9,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rishusahu23/fam-youtube/config"
 	youtubePb "github.com/rishusahu23/fam-youtube/gen/api/youtube"
+	"github.com/rishusahu23/fam-youtube/pkg/logger"
 	"github.com/rishusahu23/fam-youtube/youtube"
 	"github.com/rishusahu23/fam-youtube/youtube/wire"
 	"github.com/soheilhy/cmux"
@@ -114,6 +115,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	logger.Init(conf.Environment)
 
 	// Start combined gRPC and HTTP server
 	startCombinedServer(ctx, conf)
